@@ -42,7 +42,7 @@ def create_daily_report(date):
 
     output_path = f"/daily_reports/{date}.csv"
 
-    counted_actions.write.csv(output_path, header=True, mode='overwrite')
+    counted_actions.coalesce(1).write.csv(output_path, header=True, mode='overwrite')
 
     spark.stop()
     return 200
