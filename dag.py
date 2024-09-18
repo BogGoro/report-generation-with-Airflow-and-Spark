@@ -3,7 +3,7 @@ import pandas as pd
 
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.bash import BashOperator
 from airflow.utils.dates import days_ago
@@ -53,7 +53,7 @@ with DAG(
         op_kwargs={'date': business_dt}
     )
     
-    skip_if_catchup = PythonOperator(
+    skip_if_catchup = BranchPythonOperator(
         task_id='skip_if_catchup',
         python_callable=skip_if_catchup,
         provide_context=True
