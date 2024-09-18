@@ -5,14 +5,8 @@ from airflow.operators.empty import EmptyOperator
 from airflow.operators.bash import BashOperator
 from airflow.utils.dates import days_ago
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, StringType, TimestampType
+from pyspark.sql.types import StructType, StructField, StringType, TimestampType, IntegerType
 from pyspark.sql.functions import col, count, when
-
-schema = StructType([
-    StructField("email", StringType(), False),
-    StructField("action", StringType(), False),
-    StructField("date", TimestampType(), False)
-])
 
 def skip_if_catchup(**kwargs):
     if kwargs['execution_date'] < days_ago(0):
@@ -25,6 +19,12 @@ def create_daily_report(date):
         .getOrCreate()
 
     csv_file_path = f"/input/{date}.csv"
+
+    schema = StructType([
+        StructField("email", StringType(), False),
+        StructField("action", StringType(), False),
+        StructField("date", TimestampType(), False)
+    ])
 
     df = spark.read.csv(
         csv_file_path,
@@ -45,10 +45,51 @@ def create_daily_report(date):
     counted_actions.coalesce(1).write.csv(output_path, header=True, mode='overwrite')
 
     spark.stop()
-    return 200
+    return "Report generated successfully."
 
 def create_weekly_report(date):
-    return 200
+    spark = SparkSession.builder \
+        .appName("Create weekly report") \
+        .getOrCreate()
+
+    csv_file_paths = [
+        f"/daily_reports/{(datetime.strptime(date, "%Y-%m-%d") - timedelta(days=i)).strftime('%Y-%m-%d')}.csv"
+        for i in range(7)
+    ]
+
+    schema = StructType([
+        StructField("email", StringType(), True),
+        StructField("create_num", IntegerType(), True),
+        StructField("read_num", IntegerType(), True),
+        StructField("update_num", IntegerType(), True),
+        StructField("delete_num", IntegerType(), True)
+    ])
+
+    weekly_report = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema)
+
+    for csv_file_path in csv_file_paths:
+        df = spark.read.csv(
+            csv_file_path,
+            schema=schema,
+            header=False,
+            sep=","
+        )
+
+        weekly_report = weekly_report.union(df)
+
+    weekly_report = weekly_report.groupBy("email").agg(
+        sum("create_num").alias("create_num"),
+        sum("read_num").alias("read_num"),
+        sum("update_num").alias("update_num"),
+        sum("delete_num").alias("delete_num")
+    )
+
+    output_path = f"/output/{date}.csv"
+
+    weekly_report.coalesce(1).write.csv(output_path, header=True, mode='overwrite')
+
+    spark.stop()
+    return "Report generated successfully."
 
 args = {
     "owner": "BogGoro",
@@ -64,7 +105,7 @@ with DAG(
         'CRUD_weekly',
         default_args=args,
         description='Weekly report generation',
-        schedule_interval='@daily',
+        schedule_interval='0 7 * * *',
         catchup=True,
         start_date=datetime.today() - timedelta(days=7),
 ) as dag:
