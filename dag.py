@@ -99,8 +99,6 @@ args = {
     'retries': 0
 }
 
-business_dt = '{{ ds }}'
-
 with DAG(
         'CRUD_weekly',
         default_args=args,
@@ -122,7 +120,7 @@ with DAG(
     create_daily_report_task = PythonOperator(
         task_id='create_daily_report',
         python_callable=create_daily_report,
-        op_kwargs={'date': business_dt}
+        op_kwargs={'date': '{{ ds }}'}
     )
     
     skip_if_catchup_task = BranchPythonOperator(
@@ -134,7 +132,7 @@ with DAG(
     create_weekly_report_task = PythonOperator(
         task_id='create_weekly_report',
         python_callable=create_weekly_report,
-        op_kwargs={'date': business_dt}
+        op_kwargs={'date': '{{ ds }}'}
     )
 
     skip_weekly_report = EmptyOperator(task_id = 'skip_weekly_report')
