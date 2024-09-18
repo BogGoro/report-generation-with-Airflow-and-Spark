@@ -35,7 +35,7 @@ with DAG(
         description='Weekly report generation',
         schedule_interval='@daily',
         catchup=True,
-        start_date=datetime.today() - timedelta(),
+        start_date=datetime.today() - timedelta(days=7),
 ) as dag:
 
     start = EmptyOperator(task_id = 'start')
