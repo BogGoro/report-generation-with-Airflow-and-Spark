@@ -18,7 +18,7 @@ def create_daily_report(date):
         .appName("Create daily report") \
         .getOrCreate()
 
-    csv_file_path = f"/input/{date}.csv"
+    csv_file_path = f"/opt/airflow/input/{date}.csv"
 
     schema = StructType([
         StructField("email", StringType(), False),
@@ -40,7 +40,7 @@ def create_daily_report(date):
         count(when(col("action") == "delete", 1)).alias("delete_num")
     )
 
-    output_path = f"/daily_reports/{date}.csv"
+    output_path = f"/opt/airflow/daily_reports/{date}.csv"
 
     counted_actions.coalesce(1).write.csv(output_path, header=True, mode='overwrite')
 
@@ -84,7 +84,7 @@ def create_weekly_report(date):
         sum("delete_num").alias("delete_num")
     )
 
-    output_path = f"/output/{date}.csv"
+    output_path = f"/opt/airflow/output/{date}.csv"
 
     weekly_report.coalesce(1).write.csv(output_path, header=True, mode='overwrite')
 
@@ -113,7 +113,7 @@ with DAG(
     get_todays_file = BashOperator(
         task_id = 'get_todays_file',
         bash_command=(
-            'python generate.py input {{ ds }} 1 10 2000'
+            'python /opt/airflow/generate/generate.py /opt/airflow/input {{ ds }} 1 10 2000'
         )
     )
 
