@@ -6,7 +6,7 @@ from airflow.operators.bash import BashOperator
 from airflow.utils.dates import days_ago
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, TimestampType, IntegerType
-from pyspark.sql.functions import col, count, when
+from pyspark.sql.functions import col, count, when, sum
 
 def skip_if_catchup(**kwargs):
     if kwargs['execution_date'] < days_ago(0):
