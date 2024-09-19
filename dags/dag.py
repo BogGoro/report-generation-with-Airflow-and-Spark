@@ -12,7 +12,7 @@ def skip_if_catchup(**kwargs):
     return 'create_weekly_report'
 
 args = {
-    "owner": "BogGoro",
+    "owner": "Denis Troegubov",
     'email': ['troyegubov.den@gmail.com'],
     'email_on_failure': False,
     'email_on_retry': False,
@@ -25,7 +25,7 @@ with DAG(
         description='Weekly report generation',
         schedule_interval='0 7 * * *',
         catchup=True,
-        start_date=datetime.today() - timedelta(days=7),
+        start_date=days_ago(6),
 ) as dag:
 
     start = EmptyOperator(task_id = 'start')
