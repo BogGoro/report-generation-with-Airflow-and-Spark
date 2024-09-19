@@ -1,5 +1,17 @@
 # Project for VK
 
+### At first we need to run docker:
+
+```
+docker compose up --build -d
+```
+
+### after docker started, Airflow UI can be found at:
+
+```
+localhost:8080
+```
+
 ### Before turning on the DAG, Spark connection should be set:
 
 ```
