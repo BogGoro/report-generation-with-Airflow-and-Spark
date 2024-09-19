@@ -17,7 +17,7 @@ localhost:8080
 ```
 Connection Id: spark-conn
 Connection Type: Spark
-Host: spark://spark-master
+Host: spark://report-generation-with-airflow-and-spark-spark-master-1
 Port: 7077
 ```
 
