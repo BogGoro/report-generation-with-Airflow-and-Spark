@@ -1,4 +1,5 @@
 import argparse
+import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, TimestampType
 from pyspark.sql.functions import col, count, when
@@ -29,14 +30,16 @@ df = spark.read.csv(
 )
 
 counted_actions = df.groupBy("email").agg(
-    count(when(col("action") == "create", 1)).alias("create_num"),
-    count(when(col("action") == "read", 1)).alias("read_num"),
-    count(when(col("action") == "update", 1)).alias("update_num"),
-    count(when(col("action") == "delete", 1)).alias("delete_num")
+    count(when(col("action") == "CREATE", 1)).alias("create_num"),
+    count(when(col("action") == "READ", 1)).alias("read_num"),
+    count(when(col("action") == "UPDATE", 1)).alias("update_num"),
+    count(when(col("action") == "DELETE", 1)).alias("delete_num")
 )
 
 output_path = f"/opt/airflow/daily_reports/{date}.csv"
 
-counted_actions.coalesce(1).write.csv(output_path, header=True, mode='overwrite')
+df_pandas = counted_actions.toPandas()
+
+df_pandas.to_csv(output_path, index=False)
 
 spark.stop()

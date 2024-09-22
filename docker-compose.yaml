@@ -4,8 +4,11 @@ x-spark-common: &spark-common
   image: bitnami/spark:latest
   volumes:
     - ./jobs:/opt/bitnami/spark/jobs
+    - ./input:/opt/airflow/input
+    - ./output:/opt/airflow/output
+    - ./daily_reports:/opt/airflow/daily_reports
   networks:
-    - code-with-yu
+    - boggoro
 
 x-airflow-common: &airflow-common
   build:
@@ -24,7 +27,7 @@ x-airflow-common: &airflow-common
   depends_on:
     - postgres
   networks:
-    - code-with-yu
+    - boggoro
 
 services:
   spark-master:
@@ -33,6 +36,8 @@ services:
     ports:
       - "9090:8080"
       - "7077:7077"
+    networks:
+      - boggoro
 
   spark-worker:
     <<: *spark-common
@@ -44,6 +49,8 @@ services:
       SPARK_WORKER_CORES: 2
       SPARK_WORKER_MEMORY: 1g
       SPARK_MASTER_URL: spark://spark-master:7077
+    networks:
+      - boggoro
 
   postgres:
     image: postgres:14.0
@@ -52,7 +59,7 @@ services:
       - POSTGRES_PASSWORD=airflow
       - POSTGRES_DB=airflow
     networks:
-      - code-with-yu
+      - boggoro
 
   webserver:
     <<: *airflow-common
@@ -61,10 +68,12 @@ services:
       - "8080:8080"
     depends_on:
       - scheduler
+    networks:
+      - boggoro
 
   scheduler:
     <<: *airflow-common
     command: bash -c "airflow db migrate && airflow users create --username admin --firstname Denis --lastname Troegubov --role Admin --email troyegubov.den@gmail.com --password admin && airflow scheduler"
 
 networks:
-  code-with-yu:
+  boggoro:

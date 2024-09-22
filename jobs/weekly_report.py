@@ -1,4 +1,5 @@
 import argparse
+import pandas as pd
 from datetime import datetime, timedelta
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
@@ -14,8 +15,13 @@ spark = SparkSession.builder \
     .appName("Create weekly report") \
     .getOrCreate()
 
+a = [
+    (datetime.strptime(date, "%Y-%m-%d") - timedelta(days=i)).strftime('%Y-%m-%d')
+    for i in range(7)
+]
+
 csv_file_paths = [
-    f"/daily_reports/{(datetime.strptime(date, "%Y-%m-%d") - timedelta(days=i)).strftime('%Y-%m-%d')}.csv"
+    f"/opt/airflow/daily_reports/{a[i]}.csv"
     for i in range(7)
 ]
 
@@ -33,7 +39,7 @@ for csv_file_path in csv_file_paths:
     df = spark.read.csv(
         csv_file_path,
         schema=schema,
-        header=False,
+        header=True,
         sep=","
     )
 
@@ -48,6 +54,8 @@ weekly_report = weekly_report.groupBy("email").agg(
 
 output_path = f"/opt/airflow/output/{date}.csv"
 
-weekly_report.coalesce(1).write.csv(output_path, header=True, mode='overwrite')
+df_pandas = weekly_report.toPandas()
+
+df_pandas.to_csv(output_path, index=False)
 
 spark.stop()

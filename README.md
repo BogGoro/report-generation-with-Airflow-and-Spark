@@ -10,6 +10,8 @@ docker compose up --build -d
 
 ```
 localhost:8080
+Username: admin
+Password: admin
 ```
 
 ### Before turning on the DAG, Spark connection should be set:
@@ -17,8 +19,12 @@ localhost:8080
 ```
 Connection Id: spark-conn
 Connection Type: Spark
-Host: spark://report-generation-with-airflow-and-spark-spark-master-1
+Host: spark://<IP>
 Port: 7077
 ```
+
+### IP for host can be found at localhost:9090
+
+### after catchup manual execution of a dug needed to get weekly report for today
 
 ### No need to generate input beforehand, input is automatically generated in DAG to simulate real life situation in wich we need to download new data each day
