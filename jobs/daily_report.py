@@ -30,10 +30,10 @@ df = spark.read.csv(
 )
 
 counted_actions = df.groupBy("email").agg(
-    count(when(col("action") == "CREATE", 1)).alias("create_num"),
-    count(when(col("action") == "READ", 1)).alias("read_num"),
-    count(when(col("action") == "UPDATE", 1)).alias("update_num"),
-    count(when(col("action") == "DELETE", 1)).alias("delete_num")
+    count(when(col("action") == "CREATE", 1)).alias("create_count"),
+    count(when(col("action") == "READ", 1)).alias("read_count"),
+    count(when(col("action") == "UPDATE", 1)).alias("update_count"),
+    count(when(col("action") == "DELETE", 1)).alias("delete_count")
 )
 
 output_path = f"/opt/airflow/daily_reports/{date}.csv"
