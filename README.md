@@ -6,6 +6,8 @@
 docker compose up --build -d
 ```
 
+### restart of container webserver-1 may be needed
+
 ### after docker started, Airflow UI can be found at:
 
 ```
